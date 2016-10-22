@@ -1,0 +1,8 @@
+limesurvey:
+  ports:
+    - "7080:80"
+  volumes:
+    - mysql:/var/lib/mysql
+    - upload:/app/upload
+  image:
+    crramirez/limesurvey:latest
