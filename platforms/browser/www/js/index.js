@@ -34,6 +34,7 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+        app.startSurvey();
     },
     // Update DOM on a Received Event
     receivedEvent: function(id) {
@@ -45,5 +46,72 @@ var app = {
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
-    }
+    },
+
+    questions: {
+        '1': {text: "What's your name?", type: "freeform"},
+        '2': {text: "Do you know why you're at Holland Bloorview?", type:"yesno"}, 
+        '2.1': {text: "Can you tell us why?", type: "freeform"},
+    },
+
+    questionSequence: ["1", "2", "2.1"],
+
+    currentQuestion: 0,
+
+    answers: {},
+
+    startSurvey: function() {
+      app.showQuestion()
+    },
+
+    showQuestion: function() {
+      question = app.questions[app.questionSequence[app.currentQuestion]]
+      div = document.getElementById("survey")
+      div.innerHTML = "<p>" + question.text + "</p>"
+      div.innerHTML += app.generateAnswerInputs(question)
+    },
+
+    generateAnswerInputs: function(question) {
+      switch(question.type) {
+        case "freeform":
+          return "<form onsubmit=\"app.takeTextAnswer(this, 'freeform-input'); return false\"><input id=\"freeform-input\" /><input type=\"submit\" value=\"Done\" /></form>"
+          break
+        case "yesno":
+          return "<button onclick=\"app.takeButtonAnswer(this, 'yes')\">Yes</button>" + 
+            "<button onclick=\"app.takeButtonAnswer(this, 'no')\">No</button>"
+          break
+      }
+    },
+
+    takeTextAnswer: function(event, inputId) {
+      app.answers[app.questionSequence[app.currentQuestion]] = document.getElementById(inputId).value
+      app.advanceToNextQuestion()
+    },
+
+    takeButtonAnswer: function(event, answer) {
+      app.answers[app.questionSequence[app.currentQuestion]] = answer
+      app.advanceToNextQuestion()
+    },
+
+    advanceToNextQuestion: function() {
+      var src = 'tron.wav'
+      var mediaSuccess = function() {
+      }
+      var mediaError = function(error) {
+        alert("Error: " + error.code + " " + error.message)
+      }
+      var mediaStatus = function(stuff) {
+      }
+      console.log("about to prep media")
+      var media = new Media(src, mediaSuccess, mediaError, mediaStatus);
+      console.log("prepped media")
+      media.play()
+      app.currentQuestion++
+      if (app.currentQuestion >= app.questionSequence.length) {
+        console.log(app.answers)
+        alert("Out of questions!")
+      } else {
+        app.showQuestion()
+      }
+    },
 };
